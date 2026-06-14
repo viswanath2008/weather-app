@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SkyPulse — Live Weather</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Animated sky background -->
+  <div class="sky-bg" id="skyBg">
+    <div class="cloud c1"></div>
+    <div class="cloud c2"></div>
+    <div class="cloud c3"></div>
+    <div class="stars" id="starsLayer"></div>
+    <div class="rain-layer" id="rainLayer"></div>
+    <div class="snow-layer" id="snowLayer"></div>
+    <div class="lightning" id="lightning"></div>
+  </div>
+
+  <div class="app-shell">
+
+    <!-- HEADER -->
+    <header class="top-bar">
+      <div class="brand">
+        <span class="brand-icon">🌤</span>
+        <span class="brand-name">SkyPulse</span>
+      </div>
+      <div class="unit-toggle">
+        <button class="unit-btn active" id="celsiusBtn" onclick="switchUnit('C')">°C</button>
+        <span class="unit-sep">/</span>
+        <button class="unit-btn" id="fahrenheitBtn" onclick="switchUnit('F')">°F</button>
+      </div>
+    </header>
+
+    <!-- SEARCH -->
+    <section class="search-section">
+      <div class="search-wrap">
+        <input
+          type="text"
+          id="cityInput"
+          class="city-input"
+          placeholder="Search any city…"
+          autocomplete="off"
+          onkeydown="if(event.key==='Enter') fetchWeather()"
+        />
+        <button class="search-btn" onclick="fetchWeather()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </button>
+        <button class="locate-btn" onclick="getLocation()" title="Use my location">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/>
+          </svg>
+        </button>
+      </div>
+      <div class="quick-cities">
+        <span class="quick-label">Popular:</span>
+        <button class="quick-chip" onclick="quickSearch('Tokyo')">Tokyo</button>
+        <button class="quick-chip" onclick="quickSearch('New York')">New York</button>
+        <button class="quick-chip" onclick="quickSearch('London')">London</button>
+        <button class="quick-chip" onclick="quickSearch('Dubai')">Dubai</button>
+        <button class="quick-chip" onclick="quickSearch('Chennai')">Chennai</button>
+      </div>
+    </section>
+
+    <!-- ERROR MESSAGE -->
+    <div class="error-toast" id="errorToast">
+      <span id="errorMsg">City not found. Try another name.</span>
+    </div>
+
+    <!-- LOADING -->
+    <div class="loader" id="loader">
+      <div class="loader-ring"></div>
+      <p>Fetching sky data…</p>
+    </div>
+
+    <!-- MAIN WEATHER CARD -->
+    <main class="weather-main" id="weatherMain" style="display:none">
+
+      <!-- Hero Card -->
+      <div class="hero-card" id="heroCard">
+        <div class="hero-top">
+          <div class="location-info">
+            <h1 class="city-name" id="cityName">—</h1>
+            <p class="country-date">
+              <span id="countryName">—</span> &nbsp;·&nbsp; <span id="localDate">—</span>
+            </p>
+            <p class="local-time" id="localTime">—</p>
+          </div>
+          <div class="weather-icon-wrap">
+            <div class="weather-emoji" id="weatherEmoji">🌤</div>
+            <img class="weather-img" id="weatherImg" src="" alt="weather illustration"/>
+          </div>
+        </div>
+
+        <div class="temp-display">
+          <span class="temp-big" id="tempBig">--</span>
+          <span class="temp-unit" id="tempUnitLabel">°C</span>
+        </div>
+        <p class="condition-text" id="conditionText">—</p>
+        <p class="feels-like">Feels like <span id="feelsLike">--</span></p>
+
+        <div class="hero-pills">
+          <div class="pill">
+            <span class="pill-icon">💧</span>
+            <span class="pill-val" id="humidity">--%</span>
+            <span class="pill-label">Humidity</span>
+          </div>
+          <div class="pill">
+            <span class="pill-icon">💨</span>
+            <span class="pill-val" id="windSpeed">-- km/h</span>
+            <span class="pill-label">Wind</span>
+          </div>
+          <div class="pill">
+            <span class="pill-icon">👁</span>
+            <span class="pill-val" id="visibility">-- km</span>
+            <span class="pill-label">Visibility</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Row -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-icon">🌅</div>
+          <div class="stat-info">
+            <span class="stat-label">Sunrise</span>
+            <span class="stat-val" id="sunrise">--:--</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🌇</div>
+          <div class="stat-info">
+            <span class="stat-label">Sunset</span>
+            <span class="stat-val" id="sunset">--:--</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🌡️</div>
+          <div class="stat-info">
+            <span class="stat-label">Pressure</span>
+            <span class="stat-val" id="pressure">-- hPa</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">☁️</div>
+          <div class="stat-info">
+            <span class="stat-label">Cloud Cover</span>
+            <span class="stat-val" id="cloudCover">--%</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🔆</div>
+          <div class="stat-info">
+            <span class="stat-label">UV Index</span>
+            <span class="stat-val" id="uvIndex">--</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🧭</div>
+          <div class="stat-info">
+            <span class="stat-label">Wind Dir</span>
+            <span class="stat-val" id="windDir">--</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hourly Forecast -->
+      <section class="section-block">
+        <h2 class="section-title">Hourly Forecast</h2>
+        <div class="hourly-scroll" id="hourlyScroll">
+          <!-- filled by JS -->
+        </div>
+      </section>
+
+      <!-- 5-Day Forecast -->
+      <section class="section-block">
+        <h2 class="section-title">5-Day Forecast</h2>
+        <div class="forecast-grid" id="forecastGrid">
+          <!-- filled by JS -->
+        </div>
+      </section>
+
+      <!-- Air Quality -->
+      <section class="section-block">
+        <h2 class="section-title">Air Quality Index</h2>
+        <div class="aqi-card" id="aqiCard">
+          <div class="aqi-number" id="aqiNumber">--</div>
+          <div class="aqi-right">
+            <div class="aqi-label" id="aqiLabel">—</div>
+            <div class="aqi-bar-wrap">
+              <div class="aqi-bar">
+                <div class="aqi-fill" id="aqiFill"></div>
+              </div>
+            </div>
+            <p class="aqi-desc" id="aqiDesc">—</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Wind Compass -->
+      <section class="section-block half-row">
+        <div class="half-card">
+          <h2 class="section-title">Wind Compass</h2>
+          <div class="compass-wrap">
+            <div class="compass">
+              <div class="compass-dirs">
+                <span class="dir n">N</span><span class="dir e">E</span>
+                <span class="dir s">S</span><span class="dir w">W</span>
+              </div>
+              <div class="compass-needle" id="compassNeedle">
+                <div class="needle-up"></div>
+                <div class="needle-down"></div>
+              </div>
+            </div>
+            <p class="wind-info-text" id="windInfoText">-- km/h — --</p>
+          </div>
+        </div>
+
+        <div class="half-card">
+          <h2 class="section-title">Humidity Gauge</h2>
+          <div class="gauge-wrap">
+            <svg class="gauge-svg" viewBox="0 0 160 100">
+              <path d="M10 90 A70 70 0 0 1 150 90" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="14" stroke-linecap="round"/>
+              <path id="gaugeFill" d="M10 90 A70 70 0 0 1 150 90" fill="none" stroke="#60c9f8" stroke-width="14" stroke-linecap="round" stroke-dasharray="220" stroke-dashoffset="220"/>
+              <text x="80" y="88" text-anchor="middle" fill="white" font-size="22" font-weight="700" id="gaugeText">--%</text>
+              <text x="80" y="100" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="10">Humidity</text>
+            </svg>
+          </div>
+        </div>
+      </section>
+
+      <!-- Fun Weather Fact -->
+      <section class="section-block">
+        <div class="fact-card" id="factCard">
+          <div class="fact-icon">💡</div>
+          <p class="fact-text" id="factText">Loading a weather fact…</p>
+        </div>
+      </section>
+
+      <!-- Footer -->
+      <footer class="app-footer">
+        <p>Data from <a href="https://openweathermap.org" target="_blank">OpenWeatherMap</a> · Built with SkyPulse</p>
+        <p class="footer-note">Last updated: <span id="lastUpdated">—</span></p>
+      </footer>
+
+    </main>
+
+    <!-- WELCOME STATE -->
+    <div class="welcome-state" id="welcomeState">
+      <div class="welcome-globe">🌍</div>
+      <h2 class="welcome-title">What's the sky doing?</h2>
+      <p class="welcome-sub">Search a city above or use your location to get live weather, forecasts, and more.</p>
+    </div>
+
+  </div>
+
+  <!-- API KEY MODAL -->
+  <div class="api-modal-overlay" id="apiModalOverlay">
+    <div class="api-modal">
+      <div class="modal-icon">🔑</div>
+      <h2>Enter Your API Key</h2>
+      <p>SkyPulse uses <strong>OpenWeatherMap</strong> for live data. It's free — grab your key at <a href="https://openweathermap.org/api" target="_blank">openweathermap.org/api</a> (takes ~2 min).</p>
+      <input type="text" id="apiKeyInput" class="api-key-input" placeholder="Paste your OpenWeatherMap API key here…" />
+      <button class="save-key-btn" onclick="saveApiKey()">Save & Start</button>
+      <p class="key-note">Your key is stored locally in your browser — never sent anywhere else.</p>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
