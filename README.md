@@ -29,36 +29,6 @@ A beautiful, fully-featured weather app built with **vanilla HTML, CSS, and Java
 
 ---
 
-## 🚀 Getting Started
-
-### Step 1 — Get a Free API Key
-
-1. Go to [openweathermap.org/api](https://openweathermap.org/api)
-2. Sign up for a **free account**
-3. Copy your API key from the dashboard (looks like `3a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d`)
-4. Keys activate within ~10 minutes of signing up
-
-### Step 2 — Run the App
-
-**Option A — Double click:**  
-Just open `index.html` in any modern browser. No server needed!
-
-**Option B — Local server (recommended):**
-```bash
-# Using Python
-python3 -m http.server 8080
-# Then open http://localhost:8080
-
-# Using Node.js (npx)
-npx serve .
-```
-
-### Step 3 — Enter Your API Key
-
-When the app opens, a modal will prompt you for your OpenWeatherMap API key. Paste it in and click **Save & Start**. Your key is stored in `localStorage` and never leaves your browser.
-
----
-
 ## 📁 Project Structure
 
 ```
